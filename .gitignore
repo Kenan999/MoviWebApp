@@ -1,8 +1,8 @@
 venv/
 __pycache__/
-instance/*
-!instance/.gitkeep
 .idea/
+data/*
+!data/.gitkeep
 *.pyc
 *.pyo
 .env
