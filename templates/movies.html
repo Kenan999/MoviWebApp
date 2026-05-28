@@ -1,16 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ user.name }}'s Movies</title>
-</head>
-<body>
-    <h1>{{ user.name }}'s Movies</h1>
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>{{ user.name }}'s Movies</h2>
 
     <ul>
         {% for movie in movies %}
-            <li>
-                {{ movie.name }} ({{ movie.year }}) - {{ movie.director }}
+            <li style="margin-bottom: 10px;">
+                {% if movie.poster_url and movie.poster_url != "N/A" %}
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster" width="100" style="vertical-align: middle;">
+                {% endif %}
+                <strong>{{ movie.name }}</strong>
+                {% if movie.year %} ({{ movie.year }}){% endif %}
+                {% if movie.director %} - {{ movie.director }}{% endif %}
                 <form action="{{ url_for('update_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" style="display:inline">
                     <input type="text" name="name" placeholder="New title" required>
                     <button type="submit">Update</button>
@@ -22,16 +23,13 @@
         {% endfor %}
     </ul>
 
-    <h2>Add Movie</h2>
+    <h3>Add Movie</h3>
     <form action="{{ url_for('user_movies', user_id=user.id) }}" method="POST">
-        <input type="text" name="name" placeholder="Movie name" required>
-        <input type="text" name="director" placeholder="Director">
-        <input type="number" name="year" placeholder="Year">
-        <input type="text" name="poster_url" placeholder="Poster URL">
+        <input type="text" name="name" placeholder="Movie title" required>
         <button type="submit">Add</button>
     </form>
+    <small>Movie details are fetched automatically from OMDb.</small>
 
-    <br>
+    <br><br>
     <a href="{{ url_for('home') }}">Back to users</a>
-</body>
-</html>
+{% endblock %}
