@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+instance/*
+!instance/.gitkeep
+.idea/
+*.pyc
+*.pyo
+.env
+schema.dbml
