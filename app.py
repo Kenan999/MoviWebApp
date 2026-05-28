@@ -22,6 +22,16 @@ data_manager = DataManager()
 OMDB_API_KEY = os.getenv("OMDB_API_KEY")
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("500.html"), 500
+
+
 @app.route("/")
 def index():
     users = data_manager.get_users()
@@ -43,7 +53,9 @@ def edit_user(user_id):
 
 @app.route("/users/<int:user_id>/update", methods=["POST"])
 def update_user(user_id):
-    new_name = request.form["name"]
+    new_name = request.form.get("name")
+    if not new_name:
+        return redirect(url_for("index"))
     data_manager.update_user(user_id, new_name)
     return redirect(url_for("index"))
 
@@ -60,22 +72,26 @@ def get_movies(user_id):
         title = request.form["name"]
 
         if OMDB_API_KEY:
-            resp = requests.get(
-                "http://www.omdbapi.com/",
-                params={"t": title, "apikey": OMDB_API_KEY},
-            )
-            data = resp.json()
+            try:
+                resp = requests.get(
+                    "http://www.omdbapi.com/",
+                    params={"t": title, "apikey": OMDB_API_KEY},
+                    timeout=5,
+                )
+                data = resp.json()
 
-            if data.get("Response") == "True":
-                director = data.get("Director", "")
-                year = data.get("Year", "")
-                try:
-                    year = int(year[:4])
-                except (ValueError, TypeError):
-                    year = None
-                poster_url = data.get("Poster", "")
-                movie = Movie(name=title, director=director, year=year, poster_url=poster_url, user_id=user_id)
-            else:
+                if data.get("Response") == "True":
+                    director = data.get("Director", "")
+                    year = data.get("Year", "")
+                    try:
+                        year = int(year[:4])
+                    except (ValueError, TypeError):
+                        year = None
+                    poster_url = data.get("Poster", "")
+                    movie = Movie(name=title, director=director, year=year, poster_url=poster_url, user_id=user_id)
+                else:
+                    movie = Movie(name=title, user_id=user_id)
+            except requests.RequestException:
                 movie = Movie(name=title, user_id=user_id)
         else:
             movie = Movie(name=title, user_id=user_id)
@@ -83,15 +99,18 @@ def get_movies(user_id):
         data_manager.add_movie(movie)
         return redirect(url_for("get_movies", user_id=user_id))
 
-    movies = data_manager.get_movies(user_id)
     user = User.query.get(user_id)
+    if not user:
+        return render_template("404.html"), 404
+    movies = data_manager.get_movies(user_id)
     return render_template("movies.html", movies=movies, user=user)
 
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/update", methods=["POST"])
 def update_movie(user_id, movie_id):
-    new_title = request.form["name"]
-    data_manager.update_movie(movie_id, new_title)
+    new_title = request.form.get("name")
+    if new_title:
+        data_manager.update_movie(movie_id, new_title)
     return redirect(url_for("get_movies", user_id=user_id))
 
 

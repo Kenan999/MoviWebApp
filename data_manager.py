@@ -1,3 +1,5 @@
+from sqlalchemy.exc import SQLAlchemyError
+
 from models import db, User, Movie
 
 
@@ -5,10 +7,14 @@ class DataManager:
 
     @staticmethod
     def create_user(name):
-        user = User(name=name)
-        db.session.add(user)
-        db.session.commit()
-        return user
+        try:
+            user = User(name=name)
+            db.session.add(user)
+            db.session.commit()
+            return user
+        except SQLAlchemyError:
+            db.session.rollback()
+            return None
 
     @staticmethod
     def get_users():
@@ -20,39 +26,59 @@ class DataManager:
 
     @staticmethod
     def add_movie(movie):
-        db.session.add(movie)
-        db.session.commit()
-        return movie
+        try:
+            db.session.add(movie)
+            db.session.commit()
+            return movie
+        except SQLAlchemyError:
+            db.session.rollback()
+            return None
 
     @staticmethod
     def update_movie(movie_id, new_title):
-        movie = Movie.query.get(movie_id)
-        if movie:
-            movie.name = new_title
-            db.session.commit()
-        return movie
+        try:
+            movie = Movie.query.get(movie_id)
+            if movie:
+                movie.name = new_title
+                db.session.commit()
+            return movie
+        except SQLAlchemyError:
+            db.session.rollback()
+            return None
 
     @staticmethod
     def delete_movie(movie_id):
-        movie = Movie.query.get(movie_id)
-        if movie:
-            db.session.delete(movie)
-            db.session.commit()
-        return movie
+        try:
+            movie = Movie.query.get(movie_id)
+            if movie:
+                db.session.delete(movie)
+                db.session.commit()
+            return movie
+        except SQLAlchemyError:
+            db.session.rollback()
+            return None
 
     @staticmethod
     def update_user(user_id, new_name):
-        user = User.query.get(user_id)
-        if user:
-            user.name = new_name
-            db.session.commit()
-        return user
+        try:
+            user = User.query.get(user_id)
+            if user:
+                user.name = new_name
+                db.session.commit()
+            return user
+        except SQLAlchemyError:
+            db.session.rollback()
+            return None
 
     @staticmethod
     def delete_user(user_id):
-        user = User.query.get(user_id)
-        if user:
-            Movie.query.filter_by(user_id=user.id).delete()
-            db.session.delete(user)
-            db.session.commit()
-        return user
+        try:
+            user = User.query.get(user_id)
+            if user:
+                Movie.query.filter_by(user_id=user.id).delete()
+                db.session.delete(user)
+                db.session.commit()
+            return user
+        except SQLAlchemyError:
+            db.session.rollback()
+            return None

@@ -14,13 +14,7 @@ pip install -r requirements.txt
 
 2. Get a free API key from https://www.omdbapi.com/apikey.aspx
 
-3. Create `.env` file:
-
-```
-OMDB_API_KEY=your_key_here
-```
-
-4. Run the app:
+3. Run the app:
 
 ```bash
 python app.py
