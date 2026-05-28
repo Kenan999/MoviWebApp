@@ -1,35 +1,53 @@
 {% extends "base.html" %}
-
 {% block content %}
-    <h2>{{ user.name }}'s Movies</h2>
 
-    <ul>
+<h2>{{ user.name }}'s Movies</h2>
+
+<div class="card">
+    {% if movies %}
+    <ul class="movie-list">
         {% for movie in movies %}
-            <li style="margin-bottom: 10px;">
-                {% if movie.poster_url and movie.poster_url != "N/A" %}
-                    <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster" width="100" style="vertical-align: middle;">
+        <li class="movie-entry">
+            {% if movie.poster_url and movie.poster_url != "N/A" %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.name }} poster" class="movie-poster">
+            {% else %}
+            <div class="movie-poster movie-poster-placeholder">No Poster</div>
+            {% endif %}
+            <div class="movie-info">
+                <strong class="movie-title">{{ movie.name }}</strong>
+                {% if movie.year or movie.director %}
+                <span class="movie-meta">
+                    {% if movie.year %}{{ movie.year }}{% endif %}
+                    {% if movie.director %}| {{ movie.director }}{% endif %}
+                </span>
                 {% endif %}
-                <strong>{{ movie.name }}</strong>
-                {% if movie.year %} ({{ movie.year }}){% endif %}
-                {% if movie.director %} - {{ movie.director }}{% endif %}
-                <form action="{{ url_for('update_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" style="display:inline">
+            </div>
+            <div class="movie-actions">
+                <form action="{{ url_for('update_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" class="inline">
                     <input type="text" name="name" placeholder="New title" required>
-                    <button type="submit">Update</button>
+                    <button type="submit" class="btn btn-edit">Update</button>
                 </form>
-                <form action="{{ url_for('delete_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" style="display:inline">
-                    <button type="submit">Delete</button>
+                <form action="{{ url_for('delete_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" class="inline" onsubmit="return confirm('Delete {{ movie.name }}?')">
+                    <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
-            </li>
+            </div>
+        </li>
         {% endfor %}
     </ul>
+    {% else %}
+    <div class="empty-state">No movies yet.</div>
+    {% endif %}
+</div>
 
-    <h3>Add Movie</h3>
-    <form action="{{ url_for('get_movies', user_id=user.id) }}" method="POST">
+<h3>Add Movie</h3>
+<div class="card">
+    <form class="add-user-form" action="{{ url_for('get_movies', user_id=user.id) }}" method="POST">
         <input type="text" name="name" placeholder="Movie title" required>
-        <button type="submit">Add</button>
+        <button type="submit" class="btn btn-add">Add Movie</button>
     </form>
-    <small>Movie details are fetched automatically from OMDb.</small>
+    <small style="display:block; padding: 0 1.5rem 1rem;">Movie details are fetched automatically from OMDb.</small>
+</div>
 
-    <br><br>
-    <a href="{{ url_for('index') }}">Back to users</a>
+<a href="{{ url_for('index') }}" class="btn btn-edit" style="display:inline-block; margin-top:1rem;">← Back to users</a>
+
 {% endblock %}
