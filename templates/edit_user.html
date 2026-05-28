@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Edit User</h2>
+
+    <div class="card">
+        <form class="add-user-form" action="{{ url_for('update_user', user_id=user.id) }}" method="POST">
+            <input type="text" name="name" value="{{ user.name }}" required>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ url_for('index') }}" class="btn btn-edit">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

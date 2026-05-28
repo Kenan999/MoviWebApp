@@ -39,3 +39,20 @@ class DataManager:
             db.session.delete(movie)
             db.session.commit()
         return movie
+
+    @staticmethod
+    def update_user(user_id, new_name):
+        user = User.query.get(user_id)
+        if user:
+            user.name = new_name
+            db.session.commit()
+        return user
+
+    @staticmethod
+    def delete_user(user_id):
+        user = User.query.get(user_id)
+        if user:
+            Movie.query.filter_by(user_id=user.id).delete()
+            db.session.delete(user)
+            db.session.commit()
+        return user

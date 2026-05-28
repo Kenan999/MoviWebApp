@@ -23,20 +23,39 @@ OMDB_API_KEY = os.getenv("OMDB_API_KEY")
 
 
 @app.route("/")
-def home():
+def index():
     users = data_manager.get_users()
     return render_template("index.html", users=users)
 
 
 @app.route("/users", methods=["POST"])
-def add_user():
+def create_user():
     name = request.form["name"]
     data_manager.create_user(name)
-    return redirect(url_for("home"))
+    return redirect(url_for("index"))
+
+
+@app.route("/users/<int:user_id>/edit")
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template("edit_user.html", user=user)
+
+
+@app.route("/users/<int:user_id>/update", methods=["POST"])
+def update_user(user_id):
+    new_name = request.form["name"]
+    data_manager.update_user(user_id, new_name)
+    return redirect(url_for("index"))
+
+
+@app.route("/users/<int:user_id>/delete", methods=["POST"])
+def delete_user(user_id):
+    data_manager.delete_user(user_id)
+    return redirect(url_for("index"))
 
 
 @app.route("/users/<int:user_id>/movies", methods=["GET", "POST"])
-def user_movies(user_id):
+def get_movies(user_id):
     if request.method == "POST":
         title = request.form["name"]
 
@@ -62,7 +81,7 @@ def user_movies(user_id):
             movie = Movie(name=title, user_id=user_id)
 
         data_manager.add_movie(movie)
-        return redirect(url_for("user_movies", user_id=user_id))
+        return redirect(url_for("get_movies", user_id=user_id))
 
     movies = data_manager.get_movies(user_id)
     user = User.query.get(user_id)
@@ -73,13 +92,13 @@ def user_movies(user_id):
 def update_movie(user_id, movie_id):
     new_title = request.form["name"]
     data_manager.update_movie(movie_id, new_title)
-    return redirect(url_for("user_movies", user_id=user_id))
+    return redirect(url_for("get_movies", user_id=user_id))
 
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/delete", methods=["POST"])
 def delete_movie(user_id, movie_id):
     data_manager.delete_movie(movie_id)
-    return redirect(url_for("user_movies", user_id=user_id))
+    return redirect(url_for("get_movies", user_id=user_id))
 
 
 @app.route("/docs")
