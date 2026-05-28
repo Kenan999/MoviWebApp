@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.name }}'s Movies</title>
+</head>
+<body>
+    <h1>{{ user.name }}'s Movies</h1>
+
+    <ul>
+        {% for movie in movies %}
+            <li>
+                {{ movie.name }} ({{ movie.year }}) - {{ movie.director }}
+                <form action="{{ url_for('update_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" style="display:inline">
+                    <input type="text" name="name" placeholder="New title" required>
+                    <button type="submit">Update</button>
+                </form>
+                <form action="{{ url_for('delete_movie', user_id=user.id, movie_id=movie.id) }}" method="POST" style="display:inline">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Add Movie</h2>
+    <form action="{{ url_for('user_movies', user_id=user.id) }}" method="POST">
+        <input type="text" name="name" placeholder="Movie name" required>
+        <input type="text" name="director" placeholder="Director">
+        <input type="number" name="year" placeholder="Year">
+        <input type="text" name="poster_url" placeholder="Poster URL">
+        <button type="submit">Add</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('home') }}">Back to users</a>
+</body>
+</html>

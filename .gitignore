@@ -7,3 +7,5 @@ data/*
 *.pyo
 .env
 schema.dbml
+openapi.yaml
+docs.html
