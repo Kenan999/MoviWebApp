@@ -14,12 +14,39 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'data/movies.db')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 db.init_app(app)
 
 data_manager = DataManager()
 
 OMDB_API_KEY = os.getenv("OMDB_API_KEY")
+
+
+def fetch_movie_from_omdb(title):
+    if not OMDB_API_KEY:
+        return None
+    try:
+        resp = requests.get(
+            "http://www.omdbapi.com/",
+            params={"t": title, "apikey": OMDB_API_KEY},
+            timeout=5,
+        )
+        data = resp.json()
+        if data.get("Response") == "True":
+            year = data.get("Year", "")
+            try:
+                year = int(year[:4])
+            except (ValueError, TypeError):
+                year = None
+            return {
+                "director": data.get("Director", ""),
+                "year": year,
+                "poster_url": data.get("Poster", ""),
+            }
+    except requests.RequestException:
+        pass
+    return None
 
 
 @app.errorhandler(404)
@@ -54,9 +81,8 @@ def edit_user(user_id):
 @app.route("/users/<int:user_id>/update", methods=["POST"])
 def update_user(user_id):
     new_name = request.form.get("name")
-    if not new_name:
-        return redirect(url_for("index"))
-    data_manager.update_user(user_id, new_name)
+    if new_name:
+        data_manager.update_user(user_id, new_name)
     return redirect(url_for("index"))
 
 
@@ -70,32 +96,17 @@ def delete_user(user_id):
 def get_movies(user_id):
     if request.method == "POST":
         title = request.form["name"]
-
-        if OMDB_API_KEY:
-            try:
-                resp = requests.get(
-                    "http://www.omdbapi.com/",
-                    params={"t": title, "apikey": OMDB_API_KEY},
-                    timeout=5,
-                )
-                data = resp.json()
-
-                if data.get("Response") == "True":
-                    director = data.get("Director", "")
-                    year = data.get("Year", "")
-                    try:
-                        year = int(year[:4])
-                    except (ValueError, TypeError):
-                        year = None
-                    poster_url = data.get("Poster", "")
-                    movie = Movie(name=title, director=director, year=year, poster_url=poster_url, user_id=user_id)
-                else:
-                    movie = Movie(name=title, user_id=user_id)
-            except requests.RequestException:
-                movie = Movie(name=title, user_id=user_id)
+        info = fetch_movie_from_omdb(title)
+        if info:
+            movie = Movie(
+                name=title,
+                director=info["director"],
+                year=info["year"],
+                poster_url=info["poster_url"],
+                user_id=user_id,
+            )
         else:
             movie = Movie(name=title, user_id=user_id)
-
         data_manager.add_movie(movie)
         return redirect(url_for("get_movies", user_id=user_id))
 
@@ -133,5 +144,4 @@ def openapi_spec():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
