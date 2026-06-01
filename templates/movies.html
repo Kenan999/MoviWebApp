@@ -39,7 +39,7 @@
 <h3>Add Movie</h3>
 <div class="card">
     <form class="add-user-form" action="{{ url_for('get_movies', user_id=user.id) }}" method="POST">
-        <input type="text" name="name" placeholder="Movie title" required>
+        <input type="text" name="name" placeholder="Title" required>
         <button type="submit" class="btn btn-add">Add Movie</button>
     </form>
     <small style="display:block; padding: 0 1.5rem 1rem;">Movie details are fetched automatically from OMDb.</small>
