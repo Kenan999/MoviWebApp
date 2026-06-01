@@ -117,6 +117,13 @@ def get_movies(user_id):
     return render_template("movies.html", movies=movies, user=user)
 
 
+@app.route("/users/<int:user_id>/movies/<int:movie_id>/edit")
+def edit_movie(user_id, movie_id):
+    movie = Movie.query.get_or_404(movie_id)
+    user = User.query.get_or_404(user_id)
+    return render_template("edit_movie.html", movie=movie, user=user)
+
+
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/update", methods=["POST"])
 def update_movie(user_id, movie_id):
     new_title = request.form.get("name")

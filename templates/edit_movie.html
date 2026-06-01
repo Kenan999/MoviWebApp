@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Edit Movie</h2>
+
+<div class="card">
+    <form class="add-user-form" action="{{ url_for('update_movie', user_id=user.id, movie_id=movie.id) }}" method="POST">
+        <input type="text" name="name" value="{{ movie.name }}" required>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{{ url_for('get_movies', user_id=user.id) }}" class="btn btn-edit">Cancel</a>
+    </form>
+</div>
+
+{% endblock %}
